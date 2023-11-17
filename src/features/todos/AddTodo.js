@@ -1,82 +1,56 @@
-    import { useState } from "react";
-    import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { addTodo } from "./todoSlice";
+import { useNavigate } from "react-router-dom";
 
-    import { addTodo } from "./todoSlice";
-    import { selectAllUsers } from "../users/authorSlice";
+const AddTodoForm = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    import { useNavigate } from "react-router-dom";
+  const users = useSelector((state) => state.users);
 
-    const AddTodoForm = () => {
-        const dispatch = useDispatch();
-        const navigate = useNavigate();
+  const onSaveTodoClicked = (e) => {
+    e.preventDefault();
 
-        const [title, setTitle] = useState("");
-        const [content, setContent] = useState("");
-        const [userId, setUserId] = useState("");
+    const title = e.target.elements.todoTitle.value;
+    const content = e.target.elements.todoContent.value;
+    const userId = e.target.elements.todoAuthor.value;
 
-        const users = useSelector(selectAllUsers);
+    if (title && content) {
+      dispatch(addTodo(title, content, userId));
+      e.target.reset();
+      navigate("/");
+    }
+  };
 
-        const onTitleChanged = (e) => setTitle(e.target.value);
-        const onContentChanged = (e) => setContent(e.target.value);
-        const onAuthorChanged = (e) => setUserId(e.target.value);
+  const usersOptions = users.map((user) => (
+    <option key={user.id} value={user.id}>
+      {user.name}
+    </option>
+  ));
 
-        const onSaveTodoClicked = () => {
-            if (title && content) {
-                dispatch(
-                    addTodo(title, content, userId)
-                )
-                setTitle("");
-                setContent("");
-                setUserId("");
-                navigate("/");
-            }
-        }
+  return (
+    <>
+      <section>
+        <h3>Add new todo:</h3>
+        <form onSubmit={onSaveTodoClicked}>
+          <label htmlFor="todoTitle">Todo Title:</label>
+          <input type="text" id="todoTitle" name="todoTitle" />
 
-        const canSave = Boolean(title) && Boolean(content) && Boolean(userId)
+          <label htmlFor="todoAuthor">Author:</label>
+          <select id="todoAuthor" name="todoAuthor">
+            <option value=""></option>
+            {usersOptions}
+          </select>
 
-        const usersOptions = users.map((user) => (
-            <option key={user.id} value={user.id}>
-            {user.name}
-            </option>
-        ));
+          <label htmlFor="todoContent">Content:</label>
+          <textarea id="todoContent" name="todoContent" />
+          <button type="submit">
+            Save Todo
+          </button>
+        </form>
+      </section>
+    </>
+  );
+};
 
-        return (
-            <>
-            <section>
-                <h3>Add new todo:</h3>
-                <form>
-                <label
-                htmlFor="todoTitle">Todo Title:</label>
-                <input
-                type="text"
-                id="todoTitle"
-                name="todoTitle"
-                value={title}
-                onChange={onTitleChanged}
-                />
-                <label htmlFor="todoAuthor">Author:</label>
-                <select id="todoAuthor" value={userId} onChange={onAuthorChanged}>
-                    <option value=""></option>
-                    {usersOptions}
-                </select>
-                <label htmlFor="todoContent">Content:</label>
-                <textarea
-                    id="todoContent"
-                    name="todoContent"
-                    value={content}
-                    onChange={onContentChanged}
-                />
-                <button
-                    type="button"
-                    onClick={onSaveTodoClicked}
-                    disabled={!canSave}
-                >
-                    Save Todo
-                </button>
-                </form>
-            </section>
-            </>
-    );
-    };
-
-    export default AddTodoForm;
+export default AddTodoForm;
